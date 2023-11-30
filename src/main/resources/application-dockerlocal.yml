@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:mysql://qa-user-mysql-local:3306/qa-user-db
+    username: user
+    password: pwd
+    

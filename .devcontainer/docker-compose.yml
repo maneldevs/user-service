@@ -1,5 +1,8 @@
 version: '2.1'
 
+volumes:
+  qa-user-mysql-local-data:
+
 networks:
   qa-network:
     name: qanetwork
@@ -14,7 +17,37 @@ services:
     volumes:
       - ../..:/workspaces:cached
       - "${HOME}/.m2:/home/mmanez/.m2"
+    ports:
+      - "8080:8080"
     command: sleep infinity
     networks:
       - qa-network
     user: mmanez
+    mem_limit: 1024m
+    environment:
+      - SPRING_PROFILES_ACTIVE=dockerlocal
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: qa-user-mysql-local
+    image: mysql:8.2.0
+    mem_limit: 512m
+    ports:
+      - "3310:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=qa-user-db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pwd
+      - TZ=UTC
+    healthcheck:
+      test: "/usr/bin/mysql --user=user --password=pwd --execute \"SHOW DATABASES;\""
+      interval: 5s
+      timeout: 2s
+      retries: 60
+    networks:
+      - qa-network
+    volumes:
+      - qa-user-mysql-local-data:/var/lib/mysql
+
